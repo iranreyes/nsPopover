@@ -380,25 +380,38 @@
           }
 
           function getBoundingClientRect(elm) {
-            var w = window;
-            var doc = document.documentElement || document.body.parentNode || document.body;
-            var x = (isDef(w.pageXOffset)) ? w.pageXOffset : doc.scrollLeft;
-            var y = (isDef(w.pageYOffset)) ? w.pageYOffset : doc.scrollTop;
-            var rect = elm.getBoundingClientRect();
+			var w = window;
+			var doc = document.documentElement || document.body.parentNode || document.body;
+			var x = (isDef(w.pageXOffset)) ? w.pageXOffset : doc.scrollLeft;
+			var y = (isDef(w.pageYOffset)) ? w.pageYOffset : doc.scrollTop;
+			var rect = elm.getBoundingClientRect();
 
-            // ClientRect class is immutable, so we need to return a modified copy
-            // of it when the window has been scrolled.
-            if (x || y) {
-              return {
-                bottom:rect.bottom+y,
-                left:rect.left + x,
-                right:rect.right + x,
-                top:rect.top + y,
-                height:rect.height,
-                width:rect.width
-              };
-            }
-            return rect;
+			var compatibleRect = null;
+			if (rect.width === undefined) {
+				compatibleRect = {};
+				compatibleRect.bottom = rect.bottom;
+				compatibleRect.left = rect.left;
+				compatibleRect.right = rect.right;
+				compatibleRect.top = rect.top;
+				compatibleRect.height = rect.height;
+				compatibleRect.width = rect.right - rect.left;
+			}
+			else
+				compatibleRect = rect;
+
+			// ClientRect class is immutable, so we need to return a modified copy
+			// of it when the window has been scrolled.
+			if (x || y) {
+				return {
+					bottom: compatibleRect.bottom + y,
+					left: compatibleRect.left + x,
+					right: compatibleRect.right + x,
+					top: compatibleRect.top + y,
+					height: compatibleRect.height,
+					width: compatibleRect.width
+				};
+			}
+			return compatibleRect;
           }
 
           function toBoolean(value) {
